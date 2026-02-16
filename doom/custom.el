@@ -15,17 +15,21 @@
      "19d62171e83f2d4d6f7c31fc0a6f437e8cec4543234f0548bad5d49be8e344cd"
      "56044c5a9cc45b6ec45c0eb28df100d3f0a576f18eef33ff8ff5d32bac2d9700" default))
  '(elfeed-feeds
-   '("https://hnrss.org/frontpage?points=100" "https://martinfowler.com/feed.atom"
-     "https://www.quantamagazine.org/feed/" "https://xkcd.com/rss.xml"
-     "byorgey.wordpress.com/feed" "mmhaskell.com/blog?format=RSS"
-     "https://feed.infoq.com/elixir/" "https://javascriptweekly.com/rss.xml"
-     "https://feed.infoq.com/fp" "ttps://martinfowler.com/feed.atom"
-     "https://ericnormand.substack.com/feed"
+   '("blog.pragmaticengineer.com" "https://newsletter.pragmaticengineer.com/feed"
+     "https://hnrss.org/frontpage?points=100"
+     "https://martinfowler.com/feed.atom" "https://www.quantamagazine.org/feed/"
+     "https://xkcd.com/rss.xml" "byorgey.wordpress.com/feed"
+     "mmhaskell.com/blog?format=RSS" "https://feed.infoq.com/elixir/"
+     "https://javascriptweekly.com/rss.xml" "https://feed.infoq.com/fp"
+     "ttps://martinfowler.com/feed.atom" "https://ericnormand.substack.com/feed"
      "https://simonwillison.net/atom/everything/"))
  '(package-selected-packages
-   '(alchemist clojure-mode coffee-mode company elfeed elixir-mode gleam-ts-mode
-     haskell-ts-mode literate-coffee-mode lsp-haskell lsp-java lsp-javacomp
-     magit markdown-preview-eww prettier ripgrep terraform-mode zig-ts-mode)))
+   '(alchemist cider clojure-mode coffee-mode company docker elfeed elixir-mode
+     gleam-ts-mode haskell-ts-mode literate-coffee-mode lsp-haskell lsp-java
+     lsp-javacomp magit markdown-preview-eww neocaml ocaml-ts-mode ocamlformat
+     pdf-tools prettier ripgrep terraform-mode zig-ts-mode))
+ '(package-vc-selected-packages
+   '((neocaml :vc-backend Git :url "https://github.com/bbatsov/neocaml"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

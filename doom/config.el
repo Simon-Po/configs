@@ -14,6 +14,51 @@
 ;; ORg stuff
 ;;
 ;;
+;;
+;;
+;;
+;;
+;;
+;; haskell
+(add-to-list 'exec-path (expand-file-name "~/.ghcup/bin"))
+(setenv "PATH" (concat (expand-file-name "~/.ghcup/bin") ":" (getenv "PATH")))
+(global-visual-line-mode 1)
+(add-hook 'vterm-mode-hook
+          (lambda ()
+            (solaire-mode -1)))
+
+(add-to-list 'custom-theme-load-path "~/.config/themes/")
+(setq doom-theme 'zenzen)
+
+(add-hook! 'doom-load-theme-hook
+  (when (eq doom-theme 'doom-zenburn)
+    (custom-set-faces!
+      '(font-lock-string-face
+        :foreground "#6F8F6F")
+
+      '(font-lock-comment-face
+        :foreground "#9FAFAF"
+        :slant italic)
+
+      '(font-lock-doc-face
+        :foreground "#9FAFAF"
+        :slant italic)
+
+      '(font-lock-comment-delimiter-face
+        :foreground "#9FAFAF"
+        :slant italic))))
+
+(use-package neocaml
+  :vc (:url "https://github.com/bbatsov/neocaml" :rev :newest))
+
+;; =============== ELIXIR======================
+(add-to-list 'auto-mode-alist '("\\.exs\\'" . elixir-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.ex\\'"  . elixir-ts-mode))
+(after! lsp-mode
+  (add-hook 'elixir-ts-mode-hook #'lsp-deferred))
+
+;; =============== !ELIXIR======================
+;;
 (after! evil
   (evil-ex-define-cmd "W" "w"))
 (use-package! gleam-ts-mode
@@ -141,7 +186,6 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-rouge)
 
 ;(after! doom-major-mode
   ; (add-to-list 'doom-major-mode-list

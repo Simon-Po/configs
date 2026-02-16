@@ -1,0 +1,33 @@
+# -*- mode: snippet -*-
+# name: GenServer inside (callbacks + API)
+# key: gsi
+# --
+use GenServer
+
+# Public API
+
+def start_link(${1:init_arg} \\ ${2::ok}) do
+  GenServer.start_link(__MODULE__, ${1:init_arg}, name: ${3:__MODULE__})
+end
+
+# GenServer callbacks
+
+@impl true
+def init(${1:init_arg}) do
+  {:ok, ${4:%{}}}
+end
+
+@impl true
+def handle_call(${5:request}, ${6:from}, ${7:state}) do
+  {:reply, ${8:reply}, ${7:state}}
+end
+
+@impl true
+def handle_cast(${9:msg}, ${7:state}) do
+  {:noreply, ${7:state}}
+end
+
+@impl true
+def handle_info(${10:info}, ${7:state}) do
+  {:noreply, ${7:state}}
+end
