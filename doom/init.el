@@ -1,9 +1,4 @@
 ;;; init.el -*- lexical-binding: t; -*-
-(require 'package)
-;; Add MELPA to archives
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-;; Load and activate packages
-(package-initialize)
 ;; This file controls what Doom modules are enabled and what order they load
 ;; in. Remember to run 'doom sync' after modifying it!
 
@@ -107,9 +102,9 @@
        ;;llm               ; when I said you needed friends, I didn't mean...
        ;;(lsp +eglot)      ; M-x vscode
        magit             ; a git porcelain for Emacs
-       ;;make              ; run make tasks from Emacs
+       ;;;;make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
-       ;;pdf               ; pdf enhancements
+       pdf               ; pdf enhancements
        ;;terraform         ; infrastructure as code
        ;;tmux              ; an API for interacting with tmux
        tree-sitter       ; syntax and parsing, sitting in a tree...
@@ -133,8 +128,6 @@
        ;;(dart +flutter)   ; paint ui and not much else
        ;;dhall
        ;;
-       (use-package gleam-ts-mode
-         :mode (rx ".gleam" eos))
        (elixir +lsp )            ; erlang done right
        ;;elm               ; care for a cup of TEA?
        emacs-lisp        ; drown in parentheses
@@ -146,7 +139,7 @@
        ;;fsharp            ; ML stands for Microsoft's Language
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        ;;gdscript          ; the language you waited for
-       (go +lsp )         ; the hipster dialect
+       (go +lsp)         ; the hipster dialect
        ;;(graphql +lsp)    ; Give queries a REST
        (haskell +lsp )    ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
@@ -172,7 +165,7 @@
        ;;purescript        ; javascript, but functional
        ;;python            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
-       ;;racket            ; a DSL for DSLs
+       racket              ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace

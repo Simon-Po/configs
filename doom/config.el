@@ -18,9 +18,100 @@
 ;;
 ;;
 ;;
+;;; Copilot configuration
+(defvar sim-copilot-enabled nil
+  "Whether Copilot is currently enabled globally.")
+
+(defun sim-toggle-copilot ()
+  "Toggle Copilot globally and disable company completion when Copilot is active."
+  (interactive)
+  (require 'copilot)
+  (setq sim-copilot-enabled (not sim-copilot-enabled))
+
+  (if sim-copilot-enabled
+      (progn
+        (message "turning on Copilot")
+
+        ;; enable copilot automatically in programming buffers
+        (unless (member #'copilot-mode prog-mode-hook)
+          (add-hook 'prog-mode-hook #'copilot-mode))
+
+        ;; update existing buffers
+        (dolist (buf (buffer-list))
+          (with-current-buffer buf
+            (when (derived-mode-p 'prog-mode)
+              (copilot-mode 1)
+              (company-mode -1)))))   ;; disable completion popup
+
+    (message "turning off Copilot")
+
+    ;; stop enabling copilot for new buffers
+    (remove-hook 'prog-mode-hook #'copilot-mode)
+
+    ;; update existing buffers
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (when (derived-mode-p 'prog-mode)
+          (copilot-mode -1)
+          (company-mode 1))))))      ;; restore completion popup
+
+
+(after! copilot
+  ;; smoother Copilot suggestions
+  (setq copilot-idle-delay 0.35
+        copilot-log-level 'error
+        copilot-max-char-warning-disable t)
+
+  ;; keybinding for toggle
+  (map! :leader
+        :desc "Toggle Copilot globally"
+        "t C" #'sim-toggle-copilot)
+
+  ;; accept suggestions
+  (map! :map copilot-completion-map
+        "<tab>" #'copilot-accept-completion
+        "TAB" #'copilot-accept-completion
+        "C-<tab>" #'copilot-accept-completion-by-word))(add-to-list 'warning-suppress-types '(copilot))
+
+;; (use-package! copilot
+;;   :hook (prog-mode . copilot-mode))
 ;;
 ;; haskell
 (add-to-list 'exec-path (expand-file-name "~/.ghcup/bin"))
+(after! lsp-mode
+  (setq lsp-gopls-server-path "/Users/spohl/go/bin/gopls"))
+;;; --- ncspot integration ---
+(defun ncspot ()
+  "Toggle ncspot in a dedicated popup vterm buffer."
+  (interactive)
+  (let ((buffer-name "*ncspot*"))
+    (if (get-buffer-window buffer-name)
+        ;; If visible → close it
+        (delete-window (get-buffer-window buffer-name))
+      ;; Else → open or reuse buffer
+      (progn
+        (unless (get-buffer buffer-name)
+          (with-current-buffer (vterm buffer-name)
+            ;; Prevent vterm from asking about killing processes
+            (setq-local confirm-kill-processes nil)
+            (vterm-send-string "ncspot")
+            (vterm-send-return)))
+        (pop-to-buffer buffer-name)))))
+
+;; Tell Doom to treat it as a stable popup
+(set-popup-rule! "^\\*ncspot\\*$"
+  :side 'bottom
+  :size 0.35
+  :select t
+  :quit nil
+  :ttl nil)
+
+;; Optional: leader key binding
+(map! :leader
+      :desc "Toggle ncspot"
+      "o m" #'ncspot)
+
+
 (setenv "PATH" (concat (expand-file-name "~/.ghcup/bin") ":" (getenv "PATH")))
 (global-visual-line-mode 1)
 (add-hook 'vterm-mode-hook
@@ -48,9 +139,13 @@
         :foreground "#9FAFAF"
         :slant italic))))
 
-(use-package neocaml
-  :vc (:url "https://github.com/bbatsov/neocaml" :rev :newest))
+(use-package! neocaml)
 
+(after! ocaml
+  (add-to-list 'auto-mode-alist '("\\.ml\\'"  . tuareg-mode))
+  (add-to-list 'auto-mode-alist '("\\.mli\\'" . tuareg-mode)))
+(after! tuareg
+  (add-hook 'tuareg-mode-hook #'lsp!))
 ;; =============== ELIXIR======================
 (add-to-list 'auto-mode-alist '("\\.exs\\'" . elixir-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.ex\\'"  . elixir-ts-mode))

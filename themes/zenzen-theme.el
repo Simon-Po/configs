@@ -106,6 +106,10 @@
   ((cursor :foreground fg :background base8)
    (tuareg-font-double-semicolon-face
  :foreground red-calm)
+(copilot-overlay-face
+ :foreground dark-cyan
+ :slant 'italic)
+
    ;; Unified comments
    (font-lock-comment-face
     :foreground comment-grey
