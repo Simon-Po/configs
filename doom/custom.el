@@ -25,9 +25,9 @@
      "https://simonwillison.net/atom/everything/"))
  '(package-selected-packages
    '(alchemist cider clojure-mode coffee-mode company docker elfeed elixir-mode
-     gleam-ts-mode haskell-ts-mode literate-coffee-mode lsp-haskell lsp-java
+     gleam-ts-mode literate-coffee-mode lsp-java
      lsp-javacomp magit markdown-preview-eww neocaml ocaml-ts-mode ocamlformat
-     pdf-tools prettier ripgrep terraform-mode zig-ts-mode))
+     pdf-tools prettier ripgrep terraform-mode wgsl-mode zig-ts-mode))
  '(package-vc-selected-packages
    '((neocaml :vc-backend Git :url "https://github.com/bbatsov/neocaml"))))
 (custom-set-faces

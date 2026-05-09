@@ -18,6 +18,60 @@
 ;;
 ;;
 ;;
+;; dual display stuff
+;; Force straight's transient to load early.
+;; Why: Emacs 30's built-in transient can be loaded first, but Doom's magit/git-commit
+;; expects newer transient internals (e.g. `transient--set-layout`), which causes
+;; `(void-function transient--set-layout)` at startup.
+(let ((transient-straight-file
+       (expand-file-name
+        (format ".local/straight/build-%d.%d/transient/transient.el"
+                emacs-major-version emacs-minor-version)
+        user-emacs-directory)))
+  (if (file-exists-p transient-straight-file)
+      (load transient-straight-file nil 'nomessage)
+    (require 'transient)))
+
+(defun my/send-buffer-to-other-frame ()
+  (interactive)
+  (let ((buf (current-buffer)))
+    (other-frame 1)
+    (switch-to-buffer buf)
+    (other-frame -1)
+    (bury-buffer)))
+;; Shortcut to notes
+(defun sim-notes ()
+  (interactive)
+  (let ((choice (read-char-choice
+                 "Open: [p] Projects, [m] Meetings, [g] General: "
+                 '(?p ?m))))
+    (dired
+     (cond
+      ((eq choice ?g) "~/notes/")
+      ((eq choice ?p) "~/notes/Projects/")
+      ((eq choice ?m) "~/notes/meetings/")))))
+(defun sim--open-from-dir (base)
+  (let* ((dirs (seq-filter
+                #'file-directory-p
+                (directory-files base t "^[^.]" t)))
+         (choice (completing-read "Select: " dirs)))
+    (dired choice)))
+
+(defun sim-work ()
+  (interactive)
+  (sim--open-from-dir "~/dev/wip/"))
+
+(defun sim-priv ()
+  (interactive)
+  (sim--open-from-dir "~/dev/priv/"))
+
+(defun sim-doom-config ()
+  (interactive)
+  (dired "~/.config/doom")
+  )
+
+(global-set-key (kbd "C-c o") #'other-frame)
+(global-set-key (kbd "C-c O") #'my/display-buffer-in-other-frame)
 ;;; Copilot configuration
 (defvar sim-copilot-enabled nil
   "Whether Copilot is currently enabled globally.")
@@ -76,10 +130,22 @@
 ;; (use-package! copilot
 ;;   :hook (prog-mode . copilot-mode))
 ;;
-;; haskell
-(add-to-list 'exec-path (expand-file-name "~/.ghcup/bin"))
+(setenv "DOTNET_ROOT" "/opt/homebrew/opt/dotnet/libexec")
+(add-to-list 'exec-path "/opt/homebrew/opt/dotnet/libexec")
 (after! lsp-mode
-  (setq lsp-gopls-server-path "/Users/spohl/go/bin/gopls"))
+  (setq lsp-gopls-server-path "/Users/spohl/go/bin/gopls")
+  (setq lsp-csharp-server-path "/Users/spohl/.local/opt/csharp-lsp/OmniSharp")
+  (setq lsp-clojure-server-path "/opt/homebrew/opt/clojure-lsp-native/bin/clojure-lsp")
+  (setq lsp-zig-zls-executable "/opt/homebrew/bin/zls")
+  (setq lsp-zig-zig-exe-path "/opt/homebrew/bin/zig")
+  )
+
+(add-to-list 'exec-path "/Users/spohl/.dotnet/tools")
+(setenv "PATH" (concat "/Users/spohl/.dotnet/tools:" (getenv "PATH")))
+
+(after! lsp-fsharp
+  (setq lsp-fsharp-server-path "/Users/spohl/.dotnet/tools/fsautocomplete"))
+
 ;;; --- ncspot integration ---
 (defun ncspot ()
   "Toggle ncspot in a dedicated popup vterm buffer."
@@ -112,8 +178,9 @@
       "o m" #'ncspot)
 
 
-(setenv "PATH" (concat (expand-file-name "~/.ghcup/bin") ":" (getenv "PATH")))
-(global-visual-line-mode 1)
+(add-hook 'text-mode-hook #'visual-line-mode)
+(add-hook 'org-mode-hook #'visual-line-mode)
+(add-hook 'markdown-mode-hook #'visual-line-mode)
 (add-hook 'vterm-mode-hook
           (lambda ()
             (solaire-mode -1)))
@@ -146,14 +213,10 @@
   (add-to-list 'auto-mode-alist '("\\.mli\\'" . tuareg-mode)))
 (after! tuareg
   (add-hook 'tuareg-mode-hook #'lsp!))
-;; =============== ELIXIR======================
-(add-to-list 'auto-mode-alist '("\\.exs\\'" . elixir-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.ex\\'"  . elixir-ts-mode))
-(after! lsp-mode
-  (add-hook 'elixir-ts-mode-hook #'lsp-deferred))
+(after! lsp-elixir
+  (setq lsp-elixir-dialyzer-enabled nil
+        lsp-elixir-suggest-specs nil))
 
-;; =============== !ELIXIR======================
-;;
 (after! evil
   (evil-ex-define-cmd "W" "w"))
 (use-package! gleam-ts-mode
@@ -225,7 +288,7 @@
         lsp-ui-doc-delay 0.2
         ;; Only show docs when you explicitly call it
         lsp-ui-doc-show-with-cursor nil
-        lsp-ui-doc-show-with-mouse t)
+        lsp-ui-doc-show-with-mouse nil)
 
   ;; Keybindings for docs and peek
   (map! :n "g h" #'lsp-ui-doc-show
@@ -237,6 +300,11 @@
   :config
   (map! :leader
         :desc "Eglot menu" "l m" #'eglot-menu-transient))
+
+(add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+(add-hook 'clojurescript-mode-hook #'rainbow-delimiters-mode)
+(add-hook 'clojurec-mode-hook #'rainbow-delimiters-mode)
+
 (defhydra doom-window-resize-hydra (:hint nil)
   "Resize window"
   ("h" evil-window-decrease-width  "shrink width")

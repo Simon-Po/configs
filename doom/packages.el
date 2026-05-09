@@ -5,6 +5,10 @@
 ;; Extra tools not provided by Doom modules
 ;; ==============================
 
+(package! mermaid-mode)
+(package! ob-mermaid)
+
+(package! rainbow-delimiters)
 
 (package! copilot
   :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
@@ -14,11 +18,6 @@
 
 (package! smudge
   :recipe (:host github :repo "danielfm/smudge"))
-
-(package! transient)
-(unpin! transient)
-
-(package! magit)
 
 (package! elfeed)
 
