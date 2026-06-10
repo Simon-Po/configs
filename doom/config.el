@@ -19,18 +19,81 @@
 ;;
 ;;
 ;; dual display stuff
-;; Force straight's transient to load early.
-;; Why: Emacs 30's built-in transient can be loaded first, but Doom's magit/git-commit
-;; expects newer transient internals (e.g. `transient--set-layout`), which causes
-;; `(void-function transient--set-layout)` at startup.
-(let ((transient-straight-file
-       (expand-file-name
-        (format ".local/straight/build-%d.%d/transient/transient.el"
-                emacs-major-version emacs-minor-version)
-        user-emacs-directory)))
-  (if (file-exists-p transient-straight-file)
+;; Force straight's transient before git-commit starts.
+;;
+;;
+
+(after! leetcode
+  (setq leetcode-save-solutions t
+        leetcode-directory "~/dev/priv/leetcode"))
+
+(after! lsp-mode
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection
+    (lsp-tramp-connection '("/home/sp/go/bin/gopls"))
+    :major-modes '(go-mode go-ts-mode)
+    :remote? t
+    :server-id 'gopls-tramp)))
+
+(defun sim-open-file-line-at-point ()
+  "Open a /path/to/file:line reference at point."
+  (interactive)
+  (let* ((line-text
+          (buffer-substring-no-properties
+           (line-beginning-position)
+           (line-end-position)))
+         (path-line-regexp
+          "\\(/[^ \n\t]+\\):\\([0-9]+\\)"))
+    (unless (string-match path-line-regexp line-text)
+      (user-error "No /path/to/file:line reference found on this line"))
+    (let ((file (match-string 1 line-text))
+          (line (string-to-number (match-string 2 line-text))))
+      (find-file file)
+      (goto-char (point-min))
+      (forward-line (1- line)))))
+;;
+(defun sim-copy-file-line ()
+  "Copy current file path with line number, like /path/to/file:57."
+  (interactive)
+  (unless buffer-file-name
+    (user-error "Current buffer is not visiting a file"))
+  (let ((link (format "%s:%d"
+                      (file-truename buffer-file-name)
+                      (line-number-at-pos))))
+    (kill-new link)
+    (message "Copied %s" link)))
+;; Why: Emacs 30's built-in transient is older than Doom's pinned Magit expects.
+(defun sim/load-straight-transient ()
+  (let* ((transient-straight-dir
+          (expand-file-name
+           (format "straight/build-%d.%d/transient"
+                   emacs-major-version emacs-minor-version)
+           doom-local-dir))
+         (transient-straight-file
+          (expand-file-name "transient.el" transient-straight-dir)))
+    (when (file-directory-p transient-straight-dir)
+      (add-to-list 'load-path transient-straight-dir))
+    (when (and (featurep 'transient)
+               (not (fboundp 'transient--set-layout)))
+      (unload-feature 'transient t))
+    (cond
+     ((fboundp 'transient--set-layout) t)
+     ((file-exists-p transient-straight-file)
       (load transient-straight-file nil 'nomessage)
-    (require 'transient)))
+      (fboundp 'transient--set-layout))
+     ((require 'transient nil t)
+      (fboundp 'transient--set-layout)))))
+
+(defun sim/enable-global-git-commit-mode ()
+  (if (sim/load-straight-transient)
+      (global-git-commit-mode)
+    (warn "Could not load a new enough transient for git-commit")))
+
+(remove-hook 'doom-first-file-hook #'global-git-commit-mode)
+(add-hook 'doom-first-file-hook #'sim/enable-global-git-commit-mode)
+
+(setq dired-use-ls-dired nil)
 
 (defun my/send-buffer-to-other-frame ()
   (interactive)
@@ -57,6 +120,7 @@
          (choice (completing-read "Select: " dirs)))
     (dired choice)))
 
+
 (defun sim-work ()
   (interactive)
   (sim--open-from-dir "~/dev/wip/"))
@@ -69,6 +133,26 @@
   (interactive)
   (dired "~/.config/doom")
   )
+
+(defun sim-daily ()
+  "Open daily notes and jump to today's header, creating it if needed."
+  (interactive)
+  (let* ((file "/Users/spohl/notes/daily_notes.md")
+         (date (format-time-string "%d.%m.%Y"))
+         (header (concat "## " date)))
+    (find-file file)
+    (goto-char (point-min))
+    (if (re-search-forward
+         (concat "^" (regexp-quote header) "$")
+         nil
+         t)
+        (progn
+          (end-of-line)
+          (forward-line 1))
+      (goto-char (point-max))
+      (unless (bolp)
+        (insert "\n"))
+      (insert "\n" header "\n\n"))))
 
 (global-set-key (kbd "C-c o") #'other-frame)
 (global-set-key (kbd "C-c O") #'my/display-buffer-in-other-frame)
@@ -133,13 +217,13 @@
 (setenv "DOTNET_ROOT" "/opt/homebrew/opt/dotnet/libexec")
 (add-to-list 'exec-path "/opt/homebrew/opt/dotnet/libexec")
 (after! lsp-mode
-  (setq lsp-gopls-server-path "/Users/spohl/go/bin/gopls")
   (setq lsp-csharp-server-path "/Users/spohl/.local/opt/csharp-lsp/OmniSharp")
   (setq lsp-clojure-server-path "/opt/homebrew/opt/clojure-lsp-native/bin/clojure-lsp")
   (setq lsp-zig-zls-executable "/opt/homebrew/bin/zls")
   (setq lsp-zig-zig-exe-path "/opt/homebrew/bin/zig")
   )
-
+(after! lsp-mode
+  (setq lsp-gopls-server-path "gopls"))
 (add-to-list 'exec-path "/Users/spohl/.dotnet/tools")
 (setenv "PATH" (concat "/Users/spohl/.dotnet/tools:" (getenv "PATH")))
 
@@ -213,6 +297,8 @@
   (add-to-list 'auto-mode-alist '("\\.mli\\'" . tuareg-mode)))
 (after! tuareg
   (add-hook 'tuareg-mode-hook #'lsp!))
+(add-to-list 'auto-mode-alist '("\\.exs\\'" . elixir-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.ex\\'" . elixir-ts-mode))
 (after! lsp-elixir
   (setq lsp-elixir-dialyzer-enabled nil
         lsp-elixir-suggest-specs nil))

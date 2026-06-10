@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: new
+# key: new
+# --
+func New() *${1:StructName} {
+     return &${1}{}
+}

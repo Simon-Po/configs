@@ -4,7 +4,7 @@
 ;; ==============================
 ;; Extra tools not provided by Doom modules
 ;; ==============================
-
+(package! leetcode)
 (package! mermaid-mode)
 (package! ob-mermaid)
 

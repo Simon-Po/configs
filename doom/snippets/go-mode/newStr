@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: newStructure
+# key: newstr
+# --
+
+func New${1:StructName}() *$1 {
+     return &$1{}
+}
